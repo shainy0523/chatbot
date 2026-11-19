@@ -229,3 +229,16 @@
   border-inline: none;
   text-align: left;
 }
+
+.sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.sources a {
+  text-decoration: underline;
+}

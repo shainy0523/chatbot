@@ -145,6 +145,7 @@ async function handleSendMessage() {
       {
         sender: "bot",
         text: data.reply,
+        sources: data.sources || [],
         time: new Date()
       }
     ]);
@@ -187,6 +188,16 @@ async function handleSendMessage() {
             {msg.sender === "bot" && <div className="avatar bot">AI</div>}
             <div className="bubble-wrap">
               <div className="bubble">{msg.text}</div>
+              {msg.sources?.length > 0 && (
+                <div className="sources">
+                  Sources:{" "}
+                  {msg.sources.slice(0, 3).map((s, i) => (
+                    <a key={i} href={s.url} target="_blank" rel="noreferrer">
+                      {s.title || new URL(s.url).hostname}
+                    </a>
+                  ))}
+                </div>
+              )}
               <span className="time">{formatTime(msg.time)}</span>
             </div>
           </div>
