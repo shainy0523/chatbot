@@ -64,31 +64,109 @@ function App() {
     return "Sorry, I don't understand that yet.";
   }
 
-  function handleSendMessage() {
-    if (!message.trim() || isBotTyping) return
+  // function handleSendMessage() {
+  //   if (!message.trim() || isBotTyping) return
 
-    const sentText = message.trim()
+  //   const sentText = message.trim()
 
-    // 1. show the user's message right away
+  //   // 1. show the user's message right away
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { sender: "user", text: sentText, time: new Date() }
+  //   ]);
+  //   setMessage("");
+  //   clearTimeout(typingTimeout.current);
+  //   setIsUserTyping(false);
+  //   inputRef.current?.focus();
+
+  //   // 2. bot "typing..." for a moment, then show the reply
+  //   setIsBotTyping(true);
+  //   setTimeout(() => {
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       { sender: "bot", text: botMessage(sentText), time: new Date() }
+  //     ]);
+  //     setIsBotTyping(false);
+  //   }, 1500);
+  // }
+
+
+async function handleSendMessage() {
+  if (!message.trim() || isBotTyping) return;
+
+  const sentText = message.trim();
+
+  // 1. Display user message immediately
+  setMessages((prev) => [
+    ...prev,
+    {
+      sender: "user",
+      text: sentText,
+      time: new Date()
+    }
+  ]);
+
+  // 2. Clear input
+  setMessage("");
+  clearTimeout(typingTimeout.current);
+  setIsUserTyping(false);
+
+  inputRef.current?.focus();
+
+  // 3. Show bot typing indicator
+  setIsBotTyping(true);
+
+  try {
+    // 4. Send message to Express backend
+    const response = await fetch(
+      "http://localhost:5001/api/chat",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: sentText
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Something went wrong"
+      );
+    }
+
+    // 5. Display AI-generated response
     setMessages((prev) => [
       ...prev,
-      { sender: "user", text: sentText, time: new Date() }
+      {
+        sender: "bot",
+        text: data.reply,
+        time: new Date()
+      }
     ]);
-    setMessage("");
-    clearTimeout(typingTimeout.current);
-    setIsUserTyping(false);
-    inputRef.current?.focus();
 
-    // 2. bot "typing..." for a moment, then show the reply
-    setIsBotTyping(true);
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", text: botMessage(sentText), time: new Date() }
-      ]);
-      setIsBotTyping(false);
-    }, 1500);
+  } catch (error) {
+    console.error("Chat error:", error);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        sender: "bot",
+        text: "Sorry, something went wrong. Please try again.",
+        time: new Date()
+      }
+    ]);
+
+  } finally {
+    // 6. Stop typing indicator
+    setIsBotTyping(false);
   }
+}
+
 
   return (
     <div className="chat">
