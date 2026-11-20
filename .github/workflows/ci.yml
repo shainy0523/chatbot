@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+
+      - name: Install (web + backend)
+        run: |
+          npm ci
+          npm --prefix backend ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Backend tests
+        run: npm test
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Dependency audit (fail on high or critical)
+        run: |
+          npm audit --omit=dev --audit-level=high
+          npm --prefix backend audit --omit=dev --audit-level=high
