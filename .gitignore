@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code
+.claude/
+
+# Environment files (keep the *.example templates)
+.env
+.env.*
+!.env.example
+
+# Expo / React Native
+.expo/
+*.tsbuildinfo
